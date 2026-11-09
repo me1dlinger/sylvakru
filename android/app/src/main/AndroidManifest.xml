@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- USB exclusive output: the engine takes over the USB audio device and
+         drives it directly, which needs this to touch the audio settings. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -42,6 +45,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
             </intent-filter>
+
+            <!-- Opening the app when a USB audio device is plugged in, so the
+                 exclusive output can be offered (and so the activity gets a
+                 chance to ask for the access the engine needs). -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_audio_device_filter"/>
         </activity>
 
         <meta-data android:name="flutterEmbedding" android:value="2" />

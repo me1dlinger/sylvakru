@@ -1,0 +1,6 @@
+来源：https://github.com/dbry/WavPack/releases/tag/5.9.0
+发布资产：wavpack-5.9.0.tar.xz
+SHA-256：5291BC4E6D69EBBD3DA3800C5BF4A70F19BB92679B23E09B3B612C1E648D1FF
+
+该目录由官方发布归档裁剪，仅用于构建 libwavpack；未修改上游源码内容。
+已删除目录：cli/ doc/ man/ m4/ wavpackdll/ wavpackexe/ wvgainexe/ wvtagexe/ wvtestexe/ wvunpackexe/ 及 Windows 工程文件。

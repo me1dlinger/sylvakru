@@ -39,10 +39,25 @@ android {
 
     defaultConfig {
         applicationId = "com.afalphy.sylvakru"
-        minSdk = flutter.minSdkVersion
+        // The USB exclusive engine claims a USB Audio Class interface and drives
+        // it through AudioTrack/AudioDeviceInfo; the ported code assumes 26.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += listOf("-std=c++17", "-Wall", "-Wextra")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {
