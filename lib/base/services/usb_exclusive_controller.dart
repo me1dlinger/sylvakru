@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sylvakru/base/app.dart';
@@ -25,8 +26,10 @@ import 'package:sylvakru/base/utils/path.dart';
 /// paths stay separable and the handler's media-session publishing is untouched.
 final usbExclusiveController = UsbExclusiveController();
 
-/// One volume-key step for the exclusive output.
-const _phoneUsbVolumeStep = 0.02;
+/// How much louder a single phone volume-key step may make the output. The key
+/// is a discrete action, so it is allowed to move faster than the 1 dB that a
+/// slider drag or a ramp step may add.
+const _phoneUsbVolumeStepDb = 2.5;
 
 /// How much louder a single ramp step may make the output.
 const _safeUsbVolumeIncreaseDb = 1.0;
@@ -40,6 +43,12 @@ class UsbExclusiveController {
   void Function()? _onSongFinished;
   void Function(Duration position)? _onPosition;
   void Function(bool playing)? _onPlayingChanged;
+
+  /// Called when the output may be able to take the DAC over now - a device was
+  /// plugged in, or the master switch was just turned on. The handler owns the
+  /// shared player, so it is the one that decides whether to re-take the current
+  /// song and stop mpv; the controller only raises the request.
+  void Function()? _onDeviceInserted;
 
   bool _active = false;
 
@@ -107,11 +116,13 @@ class UsbExclusiveController {
   void attach({
     required void Function(Duration position) handOffToPlayer,
     required void Function() onSongFinished,
+    required void Function() onDeviceInserted,
     void Function(Duration position)? onPosition,
     void Function(bool playing)? onPlayingChanged,
   }) {
     _handOffToPlayer = handOffToPlayer;
     _onSongFinished = onSongFinished;
+    _onDeviceInserted = onDeviceInserted;
     _onPosition = onPosition;
     _onPlayingChanged = onPlayingChanged;
     onFallbackToMpv ??= handOffToPlayer;
@@ -119,13 +130,21 @@ class UsbExclusiveController {
 
   /// Persists and applies the master switch. Turning it off while a session is
   /// live hands the shared player the current position so listening continues.
+  /// Turning it on with a song already loaded asks the handler to take the
+  /// current song over at once, so a switch flipped mid-playback is honoured.
   Future<void> setEnabled(bool value) async {
     final notifier = usbAudioPreferences.usbExclusiveEnabledNotifier;
     if (notifier.value != value) {
       notifier.value = value;
     }
     setting.save();
-    if (value || !_active) {
+    if (value) {
+      if (!_active) {
+        _onDeviceInserted?.call();
+      }
+      return;
+    }
+    if (!_active) {
       return;
     }
     final position = _position;
@@ -360,6 +379,14 @@ class UsbExclusiveController {
     usbAudioPreferences.setVolumeForDevice(_usbVolumeDeviceKey, next);
   }
 
+  /// Remembers [volume] for the connected device without a live session, so the
+  /// next takeover on that DAC starts where the user left it.
+  void rememberVolume(double volume) {
+    _handleAudioStatus();
+    _rememberVolume(volume.clamp(0.0, 1.0).toDouble());
+    setting.save();
+  }
+
   Future<void> _applyUserVolume(
     double volume, {
     double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
@@ -394,10 +421,20 @@ class UsbExclusiveController {
       maxIncreaseDb: maxIncreaseDb,
     );
     _appliedOutputGain = transition.appliedGain;
+    final mode = usbAudioPreferences.volumeControlModeNotifier.value.name;
+    // Logged because whether a DAC applies the gain depends on the mode it was
+    // asked for: `auto` may pick the device's own volume, which a dongle
+    // without a volume protocol cannot honour - the log is what tells the two
+    // apart when the slider appears to do nothing.
+    logger.output(
+      'usb exclusive volume: user=${digitalGain.toStringAsFixed(4)} '
+      'gain=${transition.appliedGain.toStringAsFixed(4)} mode=$mode '
+      'replayGainDb=${(transition.adjustmentDb - dsdCompensationDb).toStringAsFixed(2)}',
+    );
     await usbAudioService.setExclusiveVolume(
       gain: digitalGain,
       replayGainDb: transition.adjustmentDb - dsdCompensationDb,
-      mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+      mode: mode,
       dsdGainCompensationDb: dsdCompensationDb,
       smoothHandoff: usbAudioPreferences.volumeSmoothHandoffNotifier.value,
     );
@@ -541,9 +578,20 @@ class UsbExclusiveController {
 
   void _handleAudioEvent() {
     final event = usbAudioEventNotifier.value;
-    if (event?.type != UsbAudioDeviceEventType.removed ||
-        event?.deviceId != _usbAudioDeviceId ||
-        !_active) {
+    if (event == null) {
+      return;
+    }
+    if (event.type == UsbAudioDeviceEventType.added) {
+      // A DAC arrived while the switch is on: ask the handler to take the
+      // current song over at its current position, so plugging in mid-playback
+      // does not need a manual re-play. When a session is already live (or the
+      // switch is off) the handler's own guards make this a no-op.
+      if (enabled && !_active) {
+        _onDeviceInserted?.call();
+      }
+      return;
+    }
+    if (event.deviceId != _usbAudioDeviceId || !_active) {
       return;
     }
     // Unplugging invalidates the session; the state listener then hands the
@@ -552,14 +600,41 @@ class UsbExclusiveController {
   }
 
   void _handleVolumeKey() {
-    final delta = usbExclusiveVolumeKeyNotifier.value - _lastVolumeKeyValue;
-    _lastVolumeKeyValue = usbExclusiveVolumeKeyNotifier.value;
-    if (delta == 0 || !_active) {
+    final value = usbExclusiveVolumeKeyNotifier.value;
+    final delta = value - _lastVolumeKeyValue;
+    _lastVolumeKeyValue = value;
+    final direction = usbExclusiveVolumeKeyDirection(
+      delta: delta,
+      active: _active,
+    );
+    if (direction == null) {
       return;
     }
-    final step = delta > 0 ? _phoneUsbVolumeStep : -_phoneUsbVolumeStep;
-    final next = (volumeNotifier.value + step).clamp(0.0, 1.0).toDouble();
-    unawaited(applyVolume(next).then((_) => setting.save()));
+    unawaited(_applyPhoneVolumeKey(direction));
+  }
+
+  /// A physical volume-key press: apply the step at once (no ramp) so the key
+  /// feels direct, allowing a bigger single step than the slider's ramp.
+  Future<void> _applyPhoneVolumeKey(AndroidVolumeDirection direction) async {
+    try {
+      await _setUserVolumeImmediately(
+        adjustedRemoteVolume(volumeNotifier.value, direction),
+      );
+      usbVolumeOverlayNotifier.value += 1;
+    } on Object catch (error) {
+      logger.output('usb volume key apply failed:$error');
+    }
+  }
+
+  Future<void> _setUserVolumeImmediately(double volume) {
+    _cancelVolumeRamp();
+    _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
+    final write = _applyUserVolume(
+      _volumeRampTarget,
+      maxIncreaseDb: _phoneUsbVolumeStepDb,
+    );
+    setting.save();
+    return write;
   }
 
   void _handleHardwareVolume() {
@@ -833,6 +908,18 @@ class UsbExclusiveController {
       return null;
     }
     return UsbAudioPreferences.sampleRates.contains(source) ? source : null;
+  }
+
+  /// Re-pushes the target buffer for the new lifecycle state while a session is
+  /// live, so the engine's output window matches what foreground/background
+  /// expects (a background session gets a deeper buffer to survive throttling).
+  Future<void> applyLifecycleBuffer(AppLifecycleState? state) async {
+    if (!_active) {
+      return;
+    }
+    await usbAudioService.setExclusiveTargetBufferMs(
+      _targetBufferMsForLifecycle(state),
+    );
   }
 
   int _targetBufferMsForLifecycle(AppLifecycleState? state) {

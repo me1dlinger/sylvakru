@@ -145,9 +145,13 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
   }
 
   Widget content(bool isShort) {
-    return ValueListenableBuilder(
-      valueListenable: currentSongNotifier,
-      builder: (context, currentSong, child) {
+    return ListenableBuilder(
+      // Also rebuild when the lyrics arrive: a streamed track is announced
+      // before its lyrics are fetched, so the area would otherwise stay blank
+      // until the song was switched away and back.
+      listenable: Listenable.merge([currentSongNotifier, updateLyricsNotifier]),
+      builder: (context, child) {
+        final currentSong = currentSongNotifier.value;
         return AnnotatedRegion(
           value: lyricsPageForegroundColor.value.computeLuminance() > 0.5
               ? SystemUiOverlayStyle.light
@@ -380,11 +384,23 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                     if (!value) {
                       return SizedBox.shrink();
                     }
+                    // A streamed track has no lyrics until its fetch lands;
+                    // show a loading state instead of dereferencing null.
+                    final parsed = currentSong.parsedLyrics;
+                    if (parsed == null) {
+                      return const Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(strokeWidth: 2.5),
+                        ),
+                      );
+                    }
                     return LyricsListView(
                       key: ValueKey(currentSong),
                       expanded: expanded,
-                      lines: currentSong.parsedLyrics!.lines,
-                      isKaraoke: currentSong.parsedLyrics!.isKaraoke,
+                      lines: parsed.lines,
+                      isKaraoke: parsed.isKaraoke,
                     );
                   },
                 ),

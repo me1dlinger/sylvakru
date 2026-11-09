@@ -72,9 +72,12 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
   }
 
   Widget content(double pageWidth, double pageHight) {
-    return ValueListenableBuilder(
-      valueListenable: currentSongNotifier,
-      builder: (context, currentSong, child) {
+    return ListenableBuilder(
+      // Rebuild when the lyrics land too, not only when the song changes: a
+      // streamed track is announced before its lyrics are fetched.
+      listenable: Listenable.merge([currentSongNotifier, updateLyricsNotifier]),
+      builder: (context, child) {
+        final currentSong = currentSongNotifier.value;
         final coverArtSize = min(
           pageWidth * (isMobile ? 0.35 : 0.3),
           pageHight * (isMobile ? 0.7 : 0.6),
@@ -177,6 +180,16 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                               ).copyWith(scrollbars: false),
                               child: currentSong == null
                                   ? SizedBox()
+                                  : currentSong.parsedLyrics == null
+                                  ? const Center(
+                                      child: SizedBox(
+                                        width: 28,
+                                        height: 28,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                        ),
+                                      ),
+                                    )
                                   : LyricsListView(
                                       key: ValueKey(currentSong),
                                       expanded: pageHight < 600 ? false : true,

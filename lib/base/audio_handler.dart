@@ -87,10 +87,35 @@ double nextSafeUsbVolume(double applied, double requested) {
   return math.pow(nextGain, 2 / 3).toDouble().clamp(0.0, 1.0);
 }
 
-/// One volume-key step for the USB exclusive output.
-double adjustedRemoteVolume(double current) {
+/// One volume-key step (as a 0..1 ratio) for the USB exclusive output.
+double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   final applied = current.clamp(0.0, 1.0).toDouble();
-  return (applied + _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+  if (identical(direction, AndroidVolumeDirection.raise)) {
+    return (applied + _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+  }
+  if (identical(direction, AndroidVolumeDirection.lower)) {
+    return (applied - _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+  }
+  return applied;
+}
+
+/// The direction a native volume-key delta means, or null when there is no
+/// change or the exclusive output is not the one that owns the sound.
+AndroidVolumeDirection? usbExclusiveVolumeKeyDirection({
+  required int delta,
+  required bool active,
+}) {
+  if (delta == 0 || !active) return null;
+  return delta > 0
+      ? AndroidVolumeDirection.raise
+      : AndroidVolumeDirection.lower;
+}
+
+/// The user volume that reaches the output: the shared path always plays at
+/// full scale (its own gain is mpv's), the exclusive path honours the request.
+double outputUserVolume({required bool active, required double requested}) {
+  if (!active) return 1;
+  return requested.clamp(0.0, 1.0).toDouble();
 }
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
@@ -172,7 +197,7 @@ Future<void> initAudioService() async {
   }
 }
 
-class MyAudioHandler extends BaseAudioHandler {
+class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   final _player = Player();
   bool _started = false;
   int currentIndex = -1;
@@ -310,6 +335,7 @@ class MyAudioHandler extends BaseAudioHandler {
     usbExclusiveController.attach(
       handOffToPlayer: _openMpvAtPosition,
       onSongFinished: _handleExclusiveSongFinished,
+      onDeviceInserted: () => unawaited(_takeOverExclusiveForCurrentSong()),
       onPosition: (position) {
         _positionController.add(position);
         updatePlaybackState(postion: position);
@@ -320,6 +346,12 @@ class MyAudioHandler extends BaseAudioHandler {
         updatePlaybackState();
       },
     );
+
+    // The exclusive engine's target buffer differs between foreground and
+    // background; the handler is the one that sees the lifecycle change.
+    if (Platform.isAndroid) {
+      WidgetsBinding.instance.addObserver(this);
+    }
 
     // iOS: hold a background task for the whole buffering phase (including
     // mid-song stalls on weak network) so the process is not suspended before
@@ -841,6 +873,30 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
+  /// Warns the lyrics view (and the media session) that [song]'s lines are now
+  /// available. A no-op if the song already moved on, so a slow fetch cannot
+  /// refresh the wrong track.
+  void _notifyLyricsReady(MyAudioMetadata song) {
+    if (currentSongNotifier.value?.id != song.id || song.parsedLyrics == null) {
+      return;
+    }
+    updateLyricsNotifier.value++;
+    updateServiceMediaItem(song, lyric: _currentLyricText());
+  }
+
+  /// Fetches the lyrics of a streamed track off the playback path and refreshes
+  /// the view when they land, so the lyrics area is not left blank after a
+  /// switch (it used to show only after the song was switched away and back).
+  Future<void> _warmLyricsInBackground(MyAudioMetadata song) async {
+    try {
+      await setParsedLyrics(song);
+    } catch (e) {
+      _mediaLog('lyrics warm failed for ${song.id}: $e');
+      return;
+    }
+    _notifyLyricsReady(song);
+  }
+
   /// How long the artwork and lyrics are waited for before giving up on a song.
   static const _prepareTimeout = Duration(seconds: 8);
 
@@ -1025,8 +1081,15 @@ class MyAudioHandler extends BaseAudioHandler {
     final prepared = gatesPlayback
         ? await _prepareForPlayback(currentSong)
         : true;
-    if (!gatesPlayback) {
-      unawaited(setParsedLyrics(currentSong));
+    if (gatesPlayback) {
+      // Local path: the lyrics were fetched above, and the song was announced
+      // before that, so tell the lyrics view its lines are ready (otherwise the
+      // area stays blank until it is forced to rebuild).
+      _notifyLyricsReady(currentSong);
+    } else {
+      // Streamed path: the fetch needs a server round trip, so it is warmed in
+      // the background and the view is refreshed the moment it lands.
+      unawaited(_warmLyricsInBackground(currentSong));
     }
 
     // The artwork's colour is cosmetic, so it is computed on its own and never
@@ -1054,8 +1117,16 @@ class MyAudioHandler extends BaseAudioHandler {
 
     // With the takeover switch on, a playable track is handed to the output
     // engine first; only when that is refused does the shared player open it.
+    final replacingExclusive = usbExclusiveController.active;
     var openedExclusive = false;
     if (usbExclusiveController.enabled) {
+      // The previous track may still be running through mpv. Silence it at the
+      // instant we commit to the takeover, so it cannot keep leaking while the
+      // engine probes permissions and opens the new file - that overlap is what
+      // made a next-track switch sound like the old song playing on.
+      if (!replacingExclusive && _player.state.playing) {
+        await _stopPlayerForExclusive();
+      }
       try {
         openedExclusive = await usbExclusiveController.start(
           currentSong,
@@ -1070,8 +1141,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
     try {
       if (openedExclusive) {
-        // The engine owns the DAC now; stop the shared player so both paths
-        // cannot drive the output at once.
+        // The engine owns the DAC now; stop the shared player (already stopped
+        // above when it was playing) so both paths cannot drive the output.
         await _stopPlayerForExclusive();
         if (isPlayingNotifier.value) {
           _playLastSyncTime = DateTime.now();
@@ -1080,6 +1151,8 @@ class MyAudioHandler extends BaseAudioHandler {
         if (usbExclusiveController.active) {
           await usbExclusiveController.stop();
         }
+        // The takeover was refused (or the engine fell back): resume the same
+        // position through mpv, so a failed takeover is not a dead end.
         await _openMpvForCurrentSong(currentSong, start: start);
       }
     } catch (error) {
@@ -1227,6 +1300,57 @@ class MyAudioHandler extends BaseAudioHandler {
     if (needPauseTmp) {
       await pause();
     }
+  }
+
+  /// Takes the current song over with the exclusive engine at its current
+  /// position.
+  ///
+  /// Wired to the controller's "device inserted" signal: with the switch on, a
+  /// DAC plugged in mid-playback must hand the playing song to the engine, and
+  /// flipping the switch on must do the same. It is the same playback moved to
+  /// the other output, so it never counts a listen and never touches the queue.
+  Future<void> _takeOverExclusiveForCurrentSong() async {
+    if (!usbExclusiveController.enabled || usbExclusiveController.active) {
+      return;
+    }
+    if (!Platform.isAndroid ||
+        loadingSong ||
+        playQueue.isEmpty ||
+        currentSongNotifier.value == null) {
+      return;
+    }
+    final currentSong = currentSongNotifier.value!;
+    final position = getPosition();
+    final wasPlaying = isPlayingNotifier.value;
+    try {
+      final started = await usbExclusiveController.start(
+        currentSong,
+        start: position,
+        paused: !wasPlaying,
+      );
+      if (!started) {
+        return;
+      }
+      // The engine owns the DAC now; silence mpv so both paths cannot drive the
+      // output, and publish the position the takeover resumed from.
+      await _stopPlayerForExclusive();
+      _positionController.add(usbExclusiveController.position);
+      updatePlaybackState(postion: usbExclusiveController.position);
+      _mediaLog(
+        'usb exclusive takeover at ${position.inMilliseconds}ms '
+        '(${currentSong.title})',
+      );
+    } catch (error) {
+      logger.output('usb exclusive takeover failed:$error');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!usbExclusiveController.active) {
+      return;
+    }
+    unawaited(usbExclusiveController.applyLifecycleBuffer(state));
   }
 
   /// Current lyric line, or null when the song has no lyrics, the position is
@@ -1476,13 +1600,16 @@ class MyAudioHandler extends BaseAudioHandler {
   /// takes over.
   void setUsbExclusiveVolume(double volume) {
     final next = volume.clamp(0.0, 1.0).toDouble();
+    usbExclusiveVolumeNotifier.value = next;
+    // A live session gets the new gain; otherwise it is only remembered for the
+    // device (per-device, so a reconnect restores it) until the next takeover.
     if (usbExclusiveController.active) {
       unawaited(
         usbExclusiveController.applyVolume(next).then((_) => savePlayState()),
       );
       return;
     }
-    usbExclusiveVolumeNotifier.value = next;
+    usbExclusiveController.rememberVolume(next);
     savePlayState();
   }
 

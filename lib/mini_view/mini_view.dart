@@ -93,9 +93,13 @@ class _MiniViewState extends State<MiniView> {
         ),
 
         if (miniViewDisplayBottom)
-          ValueListenableBuilder(
-            valueListenable: currentSongNotifier,
-            builder: (context, currentSong, child) {
+          ListenableBuilder(
+            listenable: Listenable.merge([
+              currentSongNotifier,
+              updateLyricsNotifier,
+            ]),
+            builder: (context, child) {
+              final currentSong = currentSongNotifier.value;
               return Material(
                 color: currentCoverArtColor,
                 child: SizedBox(
@@ -111,12 +115,12 @@ class _MiniViewState extends State<MiniView> {
                               behavior: ScrollConfiguration.of(
                                 context,
                               ).copyWith(scrollbars: false),
-                              child: currentSong == null
+                              child: currentSong?.parsedLyrics == null
                                   ? SizedBox()
                                   : LyricsListView(
                                       key: ValueKey(currentSong),
                                       expanded: false,
-                                      lines: currentSong.parsedLyrics!.lines,
+                                      lines: currentSong!.parsedLyrics!.lines,
                                       isKaraoke:
                                           currentSong.parsedLyrics!.isKaraoke,
                                     ),
