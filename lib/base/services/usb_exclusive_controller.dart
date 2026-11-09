@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
@@ -41,6 +42,10 @@ class UsbExclusiveController {
   void Function(bool playing)? _onPlayingChanged;
 
   bool _active = false;
+
+  /// Set once the platform channel turns out to be missing, so a build without
+  /// the engine does not retry (and log) on every track.
+  bool _engineUnavailable = false;
   Duration _position = Duration.zero;
   Duration? _duration;
   bool _playing = false;
@@ -135,7 +140,7 @@ class UsbExclusiveController {
     Duration? start,
     bool paused = false,
   }) async {
-    if (!enabled || !_shouldTry(song)) {
+    if (!enabled || _engineUnavailable || !_shouldTry(song)) {
       return false;
     }
     final generation = ++_generation;
@@ -147,10 +152,22 @@ class UsbExclusiveController {
       return false;
     }
 
-    var capability = await usbAudioService.getExclusiveCapabilities();
-    if (capability.available && !capability.permissionGranted) {
-      await usbAudioService.probeExclusiveAccess();
+    late UsbExclusiveCapability capability;
+    try {
       capability = await usbAudioService.getExclusiveCapabilities();
+      if (capability.available && !capability.permissionGranted) {
+        await usbAudioService.probeExclusiveAccess();
+        capability = await usbAudioService.getExclusiveCapabilities();
+      }
+    } on MissingPluginException {
+      // No native side at all (a build without the engine): stop trying, and
+      // never let the attempt stand between a song and the player.
+      _engineUnavailable = true;
+      logger.output('usb exclusive: no native engine, using the shared output');
+      return false;
+    } catch (error) {
+      logger.output('usb exclusive probe failed:$error');
+      return false;
     }
     if (!capability.available || !capability.permissionGranted) {
       logger.output('usb exclusive unavailable:${capability.message}');

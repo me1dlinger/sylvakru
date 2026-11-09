@@ -199,6 +199,11 @@ class MyAudioHandler extends BaseAudioHandler {
   // track finishing and advancing the queue.
   bool _suppressPlayerCompleted = false;
 
+  // Set when a load announces a track but never opens a player (the artwork and
+  // lyrics were not ready in time): play() then has to open it, because there is
+  // nothing loaded to resume.
+  bool _needsReload = false;
+
   // Last lyric line pushed to the system media session, so the notification is
   // only refreshed when the displayed line actually changes.
   String? _publishedLyric;
@@ -1007,12 +1012,22 @@ class MyAudioHandler extends BaseAudioHandler {
     _publishedLyric = null;
     updateServiceMediaItem(currentSong);
 
-    // Lyrics and the artwork are what a head unit shows, so on a phone both are
-    // fetched before the stream starts: a track that plays for fifteen seconds
-    // with nothing on screen is worse than a short wait. The neighbouring tracks
-    // were preheated, so this normally returns at once. On a desktop there is no
-    // head unit to keep waiting for, so playback is not held back at all.
-    final prepared = isMobile ? await _prepareForPlayback(currentSong) : true;
+    // Lyrics and the artwork are what a head unit shows, so on a phone a local
+    // track waits for both before the stream opens: a track that plays for
+    // fifteen seconds with nothing on screen is worse than a short wait, and
+    // the neighbouring tracks were preheated so it normally returns at once.
+    //
+    // A streamed source is different: its cover and lyrics need a round trip to
+    // the server, and waiting for one can outlast the timeout and leave nothing
+    // playing at all. It is warmed in the background instead, so playback is
+    // never held back and never refused.
+    final gatesPlayback = isMobile && isNotStreamSource;
+    final prepared = gatesPlayback
+        ? await _prepareForPlayback(currentSong)
+        : true;
+    if (!gatesPlayback) {
+      unawaited(setParsedLyrics(currentSong));
+    }
 
     // The artwork's colour is cosmetic, so it is computed on its own and never
     // holds the stream back.
@@ -1027,9 +1042,12 @@ class MyAudioHandler extends BaseAudioHandler {
     _prefetchNeighbours();
 
     if (!prepared) {
+      // The player was never opened, so a later play() has to start over rather
+      // than poke a player that has nothing loaded.
       _mediaLog('not playing ${currentSong.id}: nothing to show yet');
       showCenterMessage(getAppLocalizations().playFailed, duration: 3000);
       loadingSong = false;
+      _needsReload = true;
       stop();
       return;
     }
@@ -1068,6 +1086,10 @@ class MyAudioHandler extends BaseAudioHandler {
       stop();
       logger.output("[${currentSong.title}] $error");
     }
+
+    // A player was opened (or the handoff to one was attempted), so a later
+    // play() has something to resume.
+    _needsReload = false;
 
     updatePlaybackState(postion: getPosition());
 
@@ -1542,6 +1564,11 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     if (playQueue.isEmpty) return;
+    if (_needsReload) {
+      _needsReload = false;
+      await load();
+      return;
+    }
     if (usbExclusiveController.active) {
       await usbExclusiveController.resume();
     } else {
