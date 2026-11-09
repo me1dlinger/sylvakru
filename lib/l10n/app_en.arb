@@ -356,5 +356,209 @@
   "savedSuccessfully": "Saved successfully",
   "controlCenterLyrics": "Control Center Lyrics",
   "connect": "Connect",
-  "notConnected": "is Not Connected"
+  "notConnected": "is Not Connected",
+  "appliedPreference": "{name} · preference applied",
+  "@appliedPreference": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "audioOutput": "Audio output",
+  "audioOutputSubtitle": "USB exclusive, fixed rate, DSD & bit depth",
+  "audioOutputLoading": "Reading playback output…",
+  "audioSource": "Audio source",
+  "available": "Available",
+  "awaitingConnection": "Awaiting connection",
+  "backgroundBuffer": "Background buffer",
+  "backgroundBufferDesc": "The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.",
+  "backgroundStability": "Background stability",
+  "bitDepthConverted": "Bit-depth conversion",
+  "bufferLevel": "Buffer level",
+  "bufferingLabel": "Buffering",
+  "buildTargetOnPlay": "Build target level on playback",
+  "canEnableExclusive": "USB exclusive output available",
+  "compatibility": "Compatibility",
+  "connected": "Connected",
+  "connectedNotConfirmed": "USB DAC connected but exclusive support unconfirmed",
+  "copiedForFeedback": "Copied — paste it into your feedback",
+  "copyToClipboard": "Copy to clipboard",
+  "currentSong": "Current track",
+  "dacEndpoint": "DAC endpoint",
+  "decodedBitDepth": "Decoded effective depth",
+  "depthLabel": "DEPTH",
+  "deviceLabel": "Device",
+  "deviceNotDeclared": "Device doesn't declare support",
+  "dsdGainCompensation": "DSD hardware level compensation",
+  "dsdGainCompensationAvailable": "The current output supports DSD hardware level compensation.",
+  "dsdGainCompensationDesc": "Calibrates DAC hardware output level for USB DoP/Native and combines with ReplayGain. Does not apply to DSD-to-PCM playback.",
+  "dsdGainCompensationUnavailable": "DSD hardware level compensation does not apply to the current output.",
+  "dsdMode": "DSD mode",
+  "dsdNativeDesc": "Sends raw DSD when the device declares RAW_DATA or a quirk sets the layout; falls back to DoP otherwise",
+  "dsdOutputStrategy": "DSD output strategy",
+  "dsdToPcm": "Decoded to PCM via the system output (most compatible)",
+  "dsdToPcmDesc": "Wrap DSD in PCM frames; used when the device supports it",
+  "dsdToPcmRates": "DSD to PCM sample rates",
+  "enableExclusive": "Enable exclusive",
+  "encoding": "Encoding",
+  "exclusive": "Exclusive",
+  "exclusivePlayback": "Exclusive playback",
+  "exportToFile": "Export to file",
+  "exportedTo": "Exported to {path}",
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "fileLabel": "File",
+  "foregroundBuffer": "Foreground buffer",
+  "formatLabel": "FORMAT",
+  "generateDiagnosticsReport": "Generate diagnostics report",
+  "generateDiagnosticsReportDesc": "Bundle device descriptors, parse results and recent logs to copy or export for the developer to debug DAC compatibility.",
+  "generateReport": "Generate report",
+  "generating": "Generating…",
+  "hardwareVolumeFrozen": "Volume sync failed; controls are frozen",
+  "hardwareVolumeSyncPending": "Syncing",
+  "hardwareVolumeUnverified": "Unverified",
+  "importAction": "Import",
+  "importQuirkConfig": "Import quirk config",
+  "importQuirkConfigDesc": "Paste the device quirk JSON from the developer; reconnect the device to apply",
+  "importQuirkFailed": "Import failed",
+  "importQuirkSuccess": "Quirk config imported; reconnect the device to apply",
+  "inputSampleRate": "Input sample rate",
+  "keepBackgroundActive": "Keep background active",
+  "keepBackgroundActiveDesc": "Reduce the chance of the system interrupting USB output during background playback.",
+  "mediaVolume": "Current media volume",
+  "minimumMs": "Min {ms} ms",
+  "@minimumMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "minimumNone": "Min --",
+  "nameLabel": "Name",
+  "needAndroid14": "Requires Android 14+",
+  "noUsbAudioDevice": "No USB audio device connected",
+  "notEnabled": "Not enabled",
+  "openSettings": "Open settings",
+  "outputFormat": "Output format",
+  "outputLinkLabel": "OUTPUT LINK",
+  "outputMode": "Output mode",
+  "outputNotMeasured": "Not measured",
+  "outputPort": "Output port",
+  "outputSampleRate": "Output sample rate",
+  "pcmBitDepth": "PCM bit depth",
+  "pcmFloatContainer": "{bits}-bit float",
+  "@pcmFloatContainer": {
+    "placeholders": {
+      "bits": {
+        "type": "int"
+      }
+    }
+  },
+  "pcmIntegerContainer": "{bits}-bit",
+  "@pcmIntegerContainer": {
+    "placeholders": {
+      "bits": {
+        "type": "int"
+      }
+    }
+  },
+  "pcmSystemDefault": "PCM / system default",
+  "playbackOpenFailed": "Playback could not open",
+  "playerOutput": "Player output",
+  "refreshUsbStatus": "Refresh USB status",
+  "releaseUsbBandwidth": "Release USB bandwidth after playback",
+  "releaseUsbBandwidthDesc": "Let the system reclaim USB audio resources after playback stops.",
+  "replayGain": "ReplayGain",
+  "replayGainAlbum": "By album",
+  "replayGainAlbumDesc": "Prefer album ReplayGain tags, falling back to track tags when unavailable.",
+  "replayGainApplying": "Syncing",
+  "replayGainFallback": "Untagged fallback gain",
+  "replayGainFallbackDesc": "Attenuate by this amount when no usable tags are available, including DSD. A fixed fallback cannot guarantee matching loudness.",
+  "replayGainFallbackStatus": "Untagged fallback · {status}",
+  "@replayGainFallbackStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "replayGainNoTag": "No tag",
+  "replayGainNotApplied": "Not applied",
+  "replayGainOff": "Off",
+  "replayGainOffDesc": "Do not apply ReplayGain.",
+  "replayGainTrack": "By track",
+  "replayGainTrackDesc": "Prefer track ReplayGain tags, falling back to album tags when unavailable.",
+  "requestSampleRate": "Requested sample rate",
+  "requested": "Requested",
+  "requestedExclusive": "USB exclusive output requested",
+  "requesting": "Requesting…",
+  "sharedOutputInfo": "Player output is PCM sent to the system. The final output may be resampled or processed by audio effects. Container size does not indicate the source's effective bit depth.",
+  "sharedOutputMode": "Shared system output",
+  "signalOutput": "Signal output",
+  "sourceBitDepth": "Source bit depth",
+  "sourceFile": "Source",
+  "speaker": "Speaker",
+  "suggestDisableBatteryOpt": "Disable battery optimization",
+  "suggestDisableBatteryOptDesc": "Otherwise the system may suspend the USB exclusive link during background playback or when switching to a large app.",
+  "supportSection": "Support",
+  "supportedSampleRate": "Supported sample rates",
+  "systemDefault": "System default",
+  "systemNoExclusive": "This system doesn't support USB exclusive requests",
+  "systemOutputFormat": "Final system format",
+  "targetMs": "Target {ms} ms",
+  "@targetMs": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "transportBuffer": "Transport buffer",
+  "transportIdle": "Idle",
+  "transportLow": "Low",
+  "transportPaused": "Paused",
+  "transportStable": "Stable",
+  "transportStatus": "Transport status",
+  "transportUnderrun": "Underrun",
+  "unavailable": "Unavailable",
+  "unrecognizedUsbDevice": "Unrecognized USB device",
+  "usbAuto": "Auto",
+  "usbDacDetected": "USB DAC detected",
+  "usbDacDisconnected": "USB DAC disconnected; reverted to Android system output",
+  "usbDiagnosticsReport": "USB diagnostics report",
+  "usbDiagnosticsReportPrivacy": "Includes device name and USB descriptors, no music file content; the serial is masked.",
+  "usbExclusive": "USB exclusive",
+  "usbExclusiveLabel": "USB EXCLUSIVE",
+  "usbExclusiveMode": "USB exclusive mode",
+  "usbExclusiveModeDesc": "Enable exclusive hints and a high-priority output policy once a DAC is connected.",
+  "usbIdLabel": "USB ID",
+  "usbOutputLabel": "{name} · USB output",
+  "@usbOutputLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "usbOutputSettings": "USB output settings",
+  "usbSlotBitDepth": "USB slot",
+  "usbStreamingBuffering": "Buffering…",
+  "usbStreamingBufferingDetail": "Waiting for the network download to catch up",
+  "viewLink": "View link",
+  "volumeControl": "Volume control",
+  "volumeControlDac": "DAC hardware volume",
+  "volumeControlDacFallbackHint": "Falls back to digital volume when DAC hardware volume is unavailable.",
+  "volumeControlDigital": "Digital volume",
+  "volumeControlRaw": "Raw digital level",
+  "volumeControlRawConfirm": "Full-scale raw output",
+  "volumeSection": "Volume",
+  "volumeSmoothHandoff": "Smooth volume handoff",
+  "volumeSmoothHandoffDesc": "Ramp digital attenuation when PCM switches to DAC hardware volume. Preserve a lower DAC volume on first takeover. Normal volume increase protection stays enabled."
 }

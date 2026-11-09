@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
+import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/widgets/lyric_list_view.dart';
 import 'package:sylvakru/base/app.dart';
@@ -59,6 +60,10 @@ class Setting {
     initFile(target, false);
 
     final json = await readJsonMapFile(target);
+
+    // USB exclusive output preferences (output format, buffers, volume mode,
+    // DSD strategy, DAC quirks overrides).
+    usbAudioPreferences.load(json);
 
     artistsIsListViewNotifier.value =
         json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
@@ -187,6 +192,7 @@ class Setting {
 
     target.writeAsStringSync(
       jsonEncode({
+        ...usbAudioPreferences.toMap(),
         'artistsIsList': artistsIsListViewNotifier.value,
         'artistsIsAscend': artistsIsAscendingNotifier.value,
         'artistsUseLargePicture': artistsUseLargePictureNotifier.value,

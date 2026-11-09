@@ -40,7 +40,13 @@ dependencies:
   provider: ^6.1.5+1
   file_picker: ^13.1.0
   permission_handler: ^13.0.1
-  audio_tags_lofty: ^0.0.9
+  # Adds ReplayGain and DSD metadata to AudioMetadata, which the USB
+  # exclusive output uses (track/album gain for volume sync, and the DSD
+  # rate/bit depth the engine is handed).
+  audio_tags_lofty:
+    git:
+      url: https://github.com/huya688zdx/audio_tags_lofty.git
+      ref: 65671b508897f6b248e5e479adae7d3f95e72474
   audio_service: ^0.18.18
   audio_service_mpris: ^0.2.0
   audio_service_win:

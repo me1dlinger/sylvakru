@@ -16,6 +16,8 @@ import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
 import 'package:sylvakru/base/services/stream_relay.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
+import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -52,6 +54,43 @@ final ValueNotifier<MyAudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final isPlayingNotifier = ValueNotifier(false);
 final playModeNotifier = ValueNotifier(0);
 final volumeNotifier = ValueNotifier(0.3);
+
+/// The volume the USB exclusive output applies while it owns the DAC (0..1),
+/// kept beside the media volume so the settings page, the overlay and the
+/// output engine all read the same value.
+final usbExclusiveVolumeNotifier = ValueNotifier(
+  UsbAudioPreferences.defaultExclusiveVolume,
+);
+
+/// How much louder a single step may make the output, and how big a step the
+/// phone's volume keys are for the USB exclusive output.
+const _safeUsbVolumeIncreaseDb = 1.0;
+const _phoneUsbVolumeStep = 0.02;
+
+/// The gain a user volume of [db] corresponds to.
+double dbToUsbVolumeRatio(double db) => math.pow(10, db / 30).toDouble();
+
+/// The next volume to apply when moving from [applied] towards [requested],
+/// limited so a jump cannot clip: raising is spread over [limitedOutputGainIncrease].
+double nextSafeUsbVolume(double applied, double requested) {
+  final current = applied.clamp(0.0, 1.0).toDouble();
+  final target = requested.clamp(0.0, 1.0).toDouble();
+  if (target <= current) {
+    return target;
+  }
+  final nextGain = limitedOutputGainIncrease(
+    appliedGain: usbExclusiveDigitalVolumeGain(current),
+    targetGain: usbExclusiveDigitalVolumeGain(target),
+    maxIncreaseDb: _safeUsbVolumeIncreaseDb,
+  );
+  return math.pow(nextGain, 2 / 3).toDouble().clamp(0.0, 1.0);
+}
+
+/// One volume-key step for the USB exclusive output.
+double adjustedRemoteVolume(double current) {
+  final applied = current.clamp(0.0, 1.0).toDouble();
+  return (applied + _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+}
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
@@ -1264,6 +1303,52 @@ class MyAudioHandler extends BaseAudioHandler {
     _pubSmallArtPath = small;
     _mediaLog('small art${_sinceSwitch()}: $small');
     refreshServiceMediaItem();
+  }
+
+  /// Sets the volume the USB exclusive output should apply.
+  ///
+  /// While the exclusive session owns the DAC this is routed to it (see the
+  /// takeover); otherwise the value is simply remembered for the next time it
+  /// takes over.
+  void setUsbExclusiveVolume(double volume) {
+    usbExclusiveVolumeNotifier.value = volume.clamp(0.0, 1.0).toDouble();
+    savePlayState();
+  }
+
+  /// What the shared player is doing and what it is feeding the output, for the
+  /// diagnostics report the USB settings page exports.
+  ///
+  /// The USB exclusive session adds its own keys when it is the one playing;
+  /// this is the media_kit side of the picture.
+  Future<Map<String, Object?>> collectSharedAudioDiagnostics() async {
+    final snapshot = <String, Object?>{
+      'capturedAtMs': DateTime.now().millisecondsSinceEpoch,
+      'playing': _player.state.playing,
+      'loading': loadingSong,
+    };
+
+    final player = _player.platform as NativePlayer;
+    try {
+      final path = await player.getProperty('path');
+      snapshot['input'] = path.isEmpty ? 'unavailable' : path;
+      for (final property in const [
+        'current-ao',
+        'audio-codec-name',
+        'audio-params/format',
+        'audio-params/samplerate',
+        'audio-params/channel-count',
+        'audio-out-params/format',
+        'audio-out-params/samplerate',
+        'audio-out-params/channel-count',
+      ]) {
+        final value = await player.getProperty(property);
+        snapshot[property] = value.isEmpty ? 'unavailable' : value;
+      }
+    } catch (error) {
+      snapshot['error'] = error.toString();
+    }
+
+    return snapshot;
   }
 
   /// Publishes the current track to the system media session.

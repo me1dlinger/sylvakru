@@ -84,7 +84,33 @@ class MyAudioMetadata {
   int? get bitrate => _audioMetadata.bitrate;
   int? get samplerate => _audioMetadata.samplerate;
 
+  double? get replayGainTrackGainDb => _audioMetadata.replayGainTrackGainDb;
+  double? get replayGainTrackPeak => _audioMetadata.replayGainTrackPeak;
+  double? get replayGainAlbumGainDb => _audioMetadata.replayGainAlbumGainDb;
+  double? get replayGainAlbumPeak => _audioMetadata.replayGainAlbumPeak;
+
   Duration? get duration => _audioMetadata.duration;
+
+  /// Whether this is a DSD file (`.dsf` / `.dff`), which the USB exclusive
+  /// output can hand to the DAC as DoP or native DSD instead of as PCM.
+  bool get isDsd {
+    final fmt = format?.toLowerCase();
+    if (fmt == 'dsf' || fmt == 'dff') {
+      return true;
+    }
+    final lowerPath = (cachePath ?? path ?? '').toLowerCase();
+    return lowerPath.endsWith('.dsf') || lowerPath.endsWith('.dff');
+  }
+
+  /// The DSD multiple (64/128/256/512). `samplerate` holds the real DSD rate;
+  /// null when it is not on the 44.1 kHz family.
+  int? get dsdMultiple {
+    final rate = samplerate;
+    if (!isDsd || rate == null || rate < 2822400 || rate % 44100 != 0) {
+      return null;
+    }
+    return rate ~/ 44100;
+  }
 
   String? get lyrics => _audioMetadata.lyrics;
 
@@ -100,6 +126,15 @@ class MyAudioMetadata {
   set bitrate(int? value) => _audioMetadata.bitrate = value;
   set samplerate(int? value) => _audioMetadata.samplerate = value;
 
+  set replayGainTrackGainDb(double? value) =>
+      _audioMetadata.replayGainTrackGainDb = value;
+  set replayGainTrackPeak(double? value) =>
+      _audioMetadata.replayGainTrackPeak = value;
+  set replayGainAlbumGainDb(double? value) =>
+      _audioMetadata.replayGainAlbumGainDb = value;
+  set replayGainAlbumPeak(double? value) =>
+      _audioMetadata.replayGainAlbumPeak = value;
+
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
 
@@ -107,12 +142,39 @@ class MyAudioMetadata {
     Map<String, dynamic> song,
     SourceType sourceType,
   ) {
+    // OpenSubsonic reports ReplayGain per track and per album, either as a
+    // number or as a string with a "dB" suffix; the USB exclusive output uses
+    // it to normalise loudness, so it is parsed once here.
+    final replayGain = song['replayGain'] is Map
+        ? song['replayGain'] as Map
+        : const {};
+    double? parseReplayGain(dynamic value, {bool peak = false}) {
+      final normalized = value is num
+          ? value.toDouble()
+          : double.tryParse(
+              value
+                  .toString()
+                  .replaceFirst(RegExp(r'\s*dB\s*$', caseSensitive: false), '')
+                  .trim(),
+            );
+      if (normalized == null ||
+          !normalized.isFinite ||
+          (peak && normalized <= 0)) {
+        return null;
+      }
+      return normalized;
+    }
+
     if (sourceType == .navidrome) {
       return library.id2Song.putIfAbsent(
         song['id'],
         () => MyAudioMetadata(
           AudioMetadata(
-            format: (song['contentType'] as String?)?.split('audio/').last,
+            // `suffix` is the real container (`flac`, `dsf`, ...), which the
+            // DSD detection relies on; the content type is the fallback.
+            format:
+                (song['suffix'] as String?) ??
+                (song['contentType'] as String?)?.split('audio/').last,
             title: song['title'],
             artist: song['artist'],
             album: song['album'],
@@ -123,6 +185,16 @@ class MyAudioMetadata {
             disc: song['discNumber'],
             bitrate: song['bitRate'],
             samplerate: song['samplingRate'],
+            replayGainTrackGainDb: parseReplayGain(replayGain['trackGain']),
+            replayGainTrackPeak: parseReplayGain(
+              replayGain['trackPeak'],
+              peak: true,
+            ),
+            replayGainAlbumGainDb: parseReplayGain(replayGain['albumGain']),
+            replayGainAlbumPeak: parseReplayGain(
+              replayGain['albumPeak'],
+              peak: true,
+            ),
             duration: song['duration'] != null
                 ? Duration(seconds: song['duration'])
                 : null,

@@ -1909,6 +1909,894 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'is Not Connected'**
   String get notConnected;
+
+  /// No description provided for @appliedPreference.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · preference applied'**
+  String appliedPreference(String name);
+
+  /// No description provided for @audioOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio output'**
+  String get audioOutput;
+
+  /// No description provided for @audioOutputSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive, fixed rate, DSD & bit depth'**
+  String get audioOutputSubtitle;
+
+  /// No description provided for @audioOutputLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading playback output…'**
+  String get audioOutputLoading;
+
+  /// No description provided for @audioSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio source'**
+  String get audioSource;
+
+  /// No description provided for @available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get available;
+
+  /// No description provided for @awaitingConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting connection'**
+  String get awaitingConnection;
+
+  /// No description provided for @backgroundBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Background buffer'**
+  String get backgroundBuffer;
+
+  /// No description provided for @backgroundBufferDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.'**
+  String get backgroundBufferDesc;
+
+  /// No description provided for @backgroundStability.
+  ///
+  /// In en, this message translates to:
+  /// **'Background stability'**
+  String get backgroundStability;
+
+  /// No description provided for @bitDepthConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Bit-depth conversion'**
+  String get bitDepthConverted;
+
+  /// No description provided for @bufferLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffer level'**
+  String get bufferLevel;
+
+  /// No description provided for @bufferingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffering'**
+  String get bufferingLabel;
+
+  /// No description provided for @buildTargetOnPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Build target level on playback'**
+  String get buildTargetOnPlay;
+
+  /// No description provided for @canEnableExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive output available'**
+  String get canEnableExclusive;
+
+  /// No description provided for @compatibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Compatibility'**
+  String get compatibility;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @connectedNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'USB DAC connected but exclusive support unconfirmed'**
+  String get connectedNotConfirmed;
+
+  /// No description provided for @copiedForFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied — paste it into your feedback'**
+  String get copiedForFeedback;
+
+  /// No description provided for @copyToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to clipboard'**
+  String get copyToClipboard;
+
+  /// No description provided for @currentSong.
+  ///
+  /// In en, this message translates to:
+  /// **'Current track'**
+  String get currentSong;
+
+  /// No description provided for @dacEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'DAC endpoint'**
+  String get dacEndpoint;
+
+  /// No description provided for @decodedBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Decoded effective depth'**
+  String get decodedBitDepth;
+
+  /// No description provided for @depthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DEPTH'**
+  String get depthLabel;
+
+  /// No description provided for @deviceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get deviceLabel;
+
+  /// No description provided for @deviceNotDeclared.
+  ///
+  /// In en, this message translates to:
+  /// **'Device doesn\'t declare support'**
+  String get deviceNotDeclared;
+
+  /// No description provided for @dsdGainCompensation.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD hardware level compensation'**
+  String get dsdGainCompensation;
+
+  /// No description provided for @dsdGainCompensationAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The current output supports DSD hardware level compensation.'**
+  String get dsdGainCompensationAvailable;
+
+  /// No description provided for @dsdGainCompensationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrates DAC hardware output level for USB DoP/Native and combines with ReplayGain. Does not apply to DSD-to-PCM playback.'**
+  String get dsdGainCompensationDesc;
+
+  /// No description provided for @dsdGainCompensationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD hardware level compensation does not apply to the current output.'**
+  String get dsdGainCompensationUnavailable;
+
+  /// No description provided for @dsdMode.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD mode'**
+  String get dsdMode;
+
+  /// No description provided for @dsdNativeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends raw DSD when the device declares RAW_DATA or a quirk sets the layout; falls back to DoP otherwise'**
+  String get dsdNativeDesc;
+
+  /// No description provided for @dsdOutputStrategy.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD output strategy'**
+  String get dsdOutputStrategy;
+
+  /// No description provided for @dsdToPcm.
+  ///
+  /// In en, this message translates to:
+  /// **'Decoded to PCM via the system output (most compatible)'**
+  String get dsdToPcm;
+
+  /// No description provided for @dsdToPcmDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrap DSD in PCM frames; used when the device supports it'**
+  String get dsdToPcmDesc;
+
+  /// No description provided for @dsdToPcmRates.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD to PCM sample rates'**
+  String get dsdToPcmRates;
+
+  /// No description provided for @enableExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable exclusive'**
+  String get enableExclusive;
+
+  /// No description provided for @encoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Encoding'**
+  String get encoding;
+
+  /// No description provided for @exclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive'**
+  String get exclusive;
+
+  /// No description provided for @exclusivePlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive playback'**
+  String get exclusivePlayback;
+
+  /// No description provided for @exportToFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to file'**
+  String get exportToFile;
+
+  /// No description provided for @exportedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to {path}'**
+  String exportedTo(String path);
+
+  /// No description provided for @fileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get fileLabel;
+
+  /// No description provided for @foregroundBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreground buffer'**
+  String get foregroundBuffer;
+
+  /// No description provided for @formatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FORMAT'**
+  String get formatLabel;
+
+  /// No description provided for @generateDiagnosticsReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate diagnostics report'**
+  String get generateDiagnosticsReport;
+
+  /// No description provided for @generateDiagnosticsReportDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bundle device descriptors, parse results and recent logs to copy or export for the developer to debug DAC compatibility.'**
+  String get generateDiagnosticsReportDesc;
+
+  /// No description provided for @generateReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate report'**
+  String get generateReport;
+
+  /// No description provided for @generating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating…'**
+  String get generating;
+
+  /// No description provided for @hardwareVolumeFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume sync failed; controls are frozen'**
+  String get hardwareVolumeFrozen;
+
+  /// No description provided for @hardwareVolumeSyncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get hardwareVolumeSyncPending;
+
+  /// No description provided for @hardwareVolumeUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Unverified'**
+  String get hardwareVolumeUnverified;
+
+  /// No description provided for @importAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importAction;
+
+  /// No description provided for @importQuirkConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Import quirk config'**
+  String get importQuirkConfig;
+
+  /// No description provided for @importQuirkConfigDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the device quirk JSON from the developer; reconnect the device to apply'**
+  String get importQuirkConfigDesc;
+
+  /// No description provided for @importQuirkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed'**
+  String get importQuirkFailed;
+
+  /// No description provided for @importQuirkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quirk config imported; reconnect the device to apply'**
+  String get importQuirkSuccess;
+
+  /// No description provided for @inputSampleRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Input sample rate'**
+  String get inputSampleRate;
+
+  /// No description provided for @keepBackgroundActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep background active'**
+  String get keepBackgroundActive;
+
+  /// No description provided for @keepBackgroundActiveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce the chance of the system interrupting USB output during background playback.'**
+  String get keepBackgroundActiveDesc;
+
+  /// No description provided for @mediaVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Current media volume'**
+  String get mediaVolume;
+
+  /// No description provided for @minimumMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {ms} ms'**
+  String minimumMs(int ms);
+
+  /// No description provided for @minimumNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Min --'**
+  String get minimumNone;
+
+  /// No description provided for @nameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameLabel;
+
+  /// No description provided for @needAndroid14.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires Android 14+'**
+  String get needAndroid14;
+
+  /// No description provided for @noUsbAudioDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'No USB audio device connected'**
+  String get noUsbAudioDevice;
+
+  /// No description provided for @notEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enabled'**
+  String get notEnabled;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @outputFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Output format'**
+  String get outputFormat;
+
+  /// No description provided for @outputLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUTPUT LINK'**
+  String get outputLinkLabel;
+
+  /// No description provided for @outputMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Output mode'**
+  String get outputMode;
+
+  /// No description provided for @outputNotMeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not measured'**
+  String get outputNotMeasured;
+
+  /// No description provided for @outputPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Output port'**
+  String get outputPort;
+
+  /// No description provided for @outputSampleRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Output sample rate'**
+  String get outputSampleRate;
+
+  /// No description provided for @pcmBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'PCM bit depth'**
+  String get pcmBitDepth;
+
+  /// No description provided for @pcmFloatContainer.
+  ///
+  /// In en, this message translates to:
+  /// **'{bits}-bit float'**
+  String pcmFloatContainer(int bits);
+
+  /// No description provided for @pcmIntegerContainer.
+  ///
+  /// In en, this message translates to:
+  /// **'{bits}-bit'**
+  String pcmIntegerContainer(int bits);
+
+  /// No description provided for @pcmSystemDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'PCM / system default'**
+  String get pcmSystemDefault;
+
+  /// No description provided for @playbackOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback could not open'**
+  String get playbackOpenFailed;
+
+  /// No description provided for @playerOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Player output'**
+  String get playerOutput;
+
+  /// No description provided for @refreshUsbStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh USB status'**
+  String get refreshUsbStatus;
+
+  /// No description provided for @releaseUsbBandwidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Release USB bandwidth after playback'**
+  String get releaseUsbBandwidth;
+
+  /// No description provided for @releaseUsbBandwidthDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the system reclaim USB audio resources after playback stops.'**
+  String get releaseUsbBandwidthDesc;
+
+  /// No description provided for @replayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain'**
+  String get replayGain;
+
+  /// No description provided for @replayGainAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'By album'**
+  String get replayGainAlbum;
+
+  /// No description provided for @replayGainAlbumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer album ReplayGain tags, falling back to track tags when unavailable.'**
+  String get replayGainAlbumDesc;
+
+  /// No description provided for @replayGainApplying.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get replayGainApplying;
+
+  /// No description provided for @replayGainFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Untagged fallback gain'**
+  String get replayGainFallback;
+
+  /// No description provided for @replayGainFallbackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Attenuate by this amount when no usable tags are available, including DSD. A fixed fallback cannot guarantee matching loudness.'**
+  String get replayGainFallbackDesc;
+
+  /// No description provided for @replayGainFallbackStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Untagged fallback · {status}'**
+  String replayGainFallbackStatus(String status);
+
+  /// No description provided for @replayGainNoTag.
+  ///
+  /// In en, this message translates to:
+  /// **'No tag'**
+  String get replayGainNoTag;
+
+  /// No description provided for @replayGainNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Not applied'**
+  String get replayGainNotApplied;
+
+  /// No description provided for @replayGainOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get replayGainOff;
+
+  /// No description provided for @replayGainOffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not apply ReplayGain.'**
+  String get replayGainOffDesc;
+
+  /// No description provided for @replayGainTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'By track'**
+  String get replayGainTrack;
+
+  /// No description provided for @replayGainTrackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer track ReplayGain tags, falling back to album tags when unavailable.'**
+  String get replayGainTrackDesc;
+
+  /// No description provided for @requestSampleRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested sample rate'**
+  String get requestSampleRate;
+
+  /// No description provided for @requested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get requested;
+
+  /// No description provided for @requestedExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive output requested'**
+  String get requestedExclusive;
+
+  /// No description provided for @requesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Requesting…'**
+  String get requesting;
+
+  /// No description provided for @sharedOutputInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Player output is PCM sent to the system. The final output may be resampled or processed by audio effects. Container size does not indicate the source\'s effective bit depth.'**
+  String get sharedOutputInfo;
+
+  /// No description provided for @sharedOutputMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared system output'**
+  String get sharedOutputMode;
+
+  /// No description provided for @signalOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal output'**
+  String get signalOutput;
+
+  /// No description provided for @sourceBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Source bit depth'**
+  String get sourceBitDepth;
+
+  /// No description provided for @sourceFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get sourceFile;
+
+  /// No description provided for @speaker.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaker'**
+  String get speaker;
+
+  /// No description provided for @suggestDisableBatteryOpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable battery optimization'**
+  String get suggestDisableBatteryOpt;
+
+  /// No description provided for @suggestDisableBatteryOptDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Otherwise the system may suspend the USB exclusive link during background playback or when switching to a large app.'**
+  String get suggestDisableBatteryOptDesc;
+
+  /// No description provided for @supportSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get supportSection;
+
+  /// No description provided for @supportedSampleRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported sample rates'**
+  String get supportedSampleRate;
+
+  /// No description provided for @systemDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get systemDefault;
+
+  /// No description provided for @systemNoExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'This system doesn\'t support USB exclusive requests'**
+  String get systemNoExclusive;
+
+  /// No description provided for @systemOutputFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Final system format'**
+  String get systemOutputFormat;
+
+  /// No description provided for @targetMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Target {ms} ms'**
+  String targetMs(int ms);
+
+  /// No description provided for @transportBuffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport buffer'**
+  String get transportBuffer;
+
+  /// No description provided for @transportIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get transportIdle;
+
+  /// No description provided for @transportLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get transportLow;
+
+  /// No description provided for @transportPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get transportPaused;
+
+  /// No description provided for @transportStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get transportStable;
+
+  /// No description provided for @transportStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport status'**
+  String get transportStatus;
+
+  /// No description provided for @transportUnderrun.
+  ///
+  /// In en, this message translates to:
+  /// **'Underrun'**
+  String get transportUnderrun;
+
+  /// No description provided for @unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get unavailable;
+
+  /// No description provided for @unrecognizedUsbDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrecognized USB device'**
+  String get unrecognizedUsbDevice;
+
+  /// No description provided for @usbAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get usbAuto;
+
+  /// No description provided for @usbDacDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'USB DAC detected'**
+  String get usbDacDetected;
+
+  /// No description provided for @usbDacDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'USB DAC disconnected; reverted to Android system output'**
+  String get usbDacDisconnected;
+
+  /// No description provided for @usbDiagnosticsReport.
+  ///
+  /// In en, this message translates to:
+  /// **'USB diagnostics report'**
+  String get usbDiagnosticsReport;
+
+  /// No description provided for @usbDiagnosticsReportPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes device name and USB descriptors, no music file content; the serial is masked.'**
+  String get usbDiagnosticsReportPrivacy;
+
+  /// No description provided for @usbExclusive.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive'**
+  String get usbExclusive;
+
+  /// No description provided for @usbExclusiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB EXCLUSIVE'**
+  String get usbExclusiveLabel;
+
+  /// No description provided for @usbExclusiveMode.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive mode'**
+  String get usbExclusiveMode;
+
+  /// No description provided for @usbExclusiveModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable exclusive hints and a high-priority output policy once a DAC is connected.'**
+  String get usbExclusiveModeDesc;
+
+  /// No description provided for @usbIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB ID'**
+  String get usbIdLabel;
+
+  /// No description provided for @usbOutputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · USB output'**
+  String usbOutputLabel(String name);
+
+  /// No description provided for @usbOutputSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'USB output settings'**
+  String get usbOutputSettings;
+
+  /// No description provided for @usbSlotBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'USB slot'**
+  String get usbSlotBitDepth;
+
+  /// No description provided for @usbStreamingBuffering.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffering…'**
+  String get usbStreamingBuffering;
+
+  /// No description provided for @usbStreamingBufferingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the network download to catch up'**
+  String get usbStreamingBufferingDetail;
+
+  /// No description provided for @viewLink.
+  ///
+  /// In en, this message translates to:
+  /// **'View link'**
+  String get viewLink;
+
+  /// No description provided for @volumeControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume control'**
+  String get volumeControl;
+
+  /// No description provided for @volumeControlDac.
+  ///
+  /// In en, this message translates to:
+  /// **'DAC hardware volume'**
+  String get volumeControlDac;
+
+  /// No description provided for @volumeControlDacFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Falls back to digital volume when DAC hardware volume is unavailable.'**
+  String get volumeControlDacFallbackHint;
+
+  /// No description provided for @volumeControlDigital.
+  ///
+  /// In en, this message translates to:
+  /// **'Digital volume'**
+  String get volumeControlDigital;
+
+  /// No description provided for @volumeControlRaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw digital level'**
+  String get volumeControlRaw;
+
+  /// No description provided for @volumeControlRawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-scale raw output'**
+  String get volumeControlRawConfirm;
+
+  /// No description provided for @volumeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volumeSection;
+
+  /// No description provided for @volumeSmoothHandoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Smooth volume handoff'**
+  String get volumeSmoothHandoff;
+
+  /// No description provided for @volumeSmoothHandoffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramp digital attenuation when PCM switches to DAC hardware volume. Preserve a lower DAC volume on first takeover. Normal volume increase protection stays enabled.'**
+  String get volumeSmoothHandoffDesc;
 }
 
 class _AppLocalizationsDelegate

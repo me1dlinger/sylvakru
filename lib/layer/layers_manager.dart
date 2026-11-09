@@ -15,6 +15,7 @@ import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/layer/about_layer.dart';
+import 'package:sylvakru/layer/audio_output_settings_layer.dart';
 import 'package:sylvakru/layer/albums_layer.dart';
 import 'package:sylvakru/layer/artists_layer.dart';
 import 'package:sylvakru/layer/folders_layer.dart';
@@ -331,6 +332,18 @@ class LayersManager {
       visibleNotifier = settingsVisibleNotifier;
       if (detail == 'about') {
         detailLayer = AboutLayer();
+      } else if (detail == 'audio_output') {
+        detailLayer = AudioOutputSettingsLayer();
+      } else if (detail == 'usb_dsd_mode') {
+        visibleNotifier = audioOutputVisibleNotifier;
+        detailLayer = AudioOutputSettingsLayer(
+          pageKind: AudioOutputSettingsPageKind.dsdMode,
+        );
+      } else if (detail == 'usb_replay_gain') {
+        visibleNotifier = audioOutputVisibleNotifier;
+        detailLayer = AudioOutputSettingsLayer(
+          pageKind: AudioOutputSettingsPageKind.replayGain,
+        );
       } else if (detail == 'license') {
         visibleNotifier = aboutVisibleNotifier;
         detailLayer = LicenseLayer();
@@ -407,6 +420,10 @@ class LayersManager {
       if (detailLayer is LicenseLayer) {
         detailWidgetMap[rootLayer] = parentLayer;
         visibleNotifier = aboutVisibleNotifier;
+      } else if (detailLayer is AudioOutputSettingsLayer &&
+          parentLayer is AudioOutputSettingsLayer) {
+        detailWidgetMap[rootLayer] = parentLayer;
+        visibleNotifier = audioOutputVisibleNotifier;
       }
     }
 

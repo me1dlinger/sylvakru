@@ -36,6 +36,27 @@ class Logger {
     _file.writeAsStringSync(content, mode: FileMode.append, flush: true);
   }
 
+  /// The last [max] log lines containing [needle], for the diagnostics report
+  /// the USB settings page can export.
+  List<String> tailContaining(String needle, {int max = 200}) {
+    try {
+      if (!_file.existsSync()) {
+        return const [];
+      }
+      final lower = needle.toLowerCase();
+      final filtered = _file
+          .readAsLinesSync()
+          .where((line) => line.toLowerCase().contains(lower))
+          .toList();
+      if (filtered.length <= max) {
+        return filtered;
+      }
+      return filtered.sublist(filtered.length - max);
+    } catch (_) {
+      return const [];
+    }
+  }
+
   void export2Directory(String directory) {
     final fileName = basename(_file.path);
     final newPath = join(directory, fileName);

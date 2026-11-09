@@ -929,4 +929,471 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notConnected => '未连接';
+
+  @override
+  String appliedPreference(String name) {
+    return '$name · 已应用偏好';
+  }
+
+  @override
+  String get audioOutput => '音频输出';
+
+  @override
+  String get audioOutputSubtitle => 'USB 独占、固定采样率、DSD 与位深';
+
+  @override
+  String get audioOutputLoading => '正在读取播放输出…';
+
+  @override
+  String get audioSource => '音频源';
+
+  @override
+  String get available => '可用';
+
+  @override
+  String get awaitingConnection => '待连接';
+
+  @override
+  String get backgroundBuffer => '后台缓冲区';
+
+  @override
+  String get backgroundBufferDesc =>
+      'USB 缓冲用于吸收短时调度抖动，上限 1000 ms；云端播放另外使用下载水位抵抗网络波动。';
+
+  @override
+  String get backgroundStability => '后台稳定性';
+
+  @override
+  String get bitDepthConverted => '位深转换';
+
+  @override
+  String get bufferLevel => '缓冲区水位';
+
+  @override
+  String get bufferingLabel => '缓冲';
+
+  @override
+  String get buildTargetOnPlay => '播放时建立目标水位';
+
+  @override
+  String get canEnableExclusive => '可启用 USB 独占输出';
+
+  @override
+  String get compatibility => '兼容性';
+
+  @override
+  String get connected => '已连接';
+
+  @override
+  String get connectedNotConfirmed => '已连接 USB DAC，但未确认支持独占';
+
+  @override
+  String get copiedForFeedback => '已复制，可直接粘贴反馈';
+
+  @override
+  String get copyToClipboard => '复制到剪贴板';
+
+  @override
+  String get currentSong => '当前歌曲';
+
+  @override
+  String get dacEndpoint => 'DAC 端点';
+
+  @override
+  String get decodedBitDepth => '解码有效位深';
+
+  @override
+  String get depthLabel => 'DEPTH';
+
+  @override
+  String get deviceLabel => '设备';
+
+  @override
+  String get deviceNotDeclared => '设备未声明支持';
+
+  @override
+  String get dsdGainCompensation => 'DSD 硬件电平补偿';
+
+  @override
+  String get dsdGainCompensationAvailable => '当前输出支持 DSD 硬件电平补偿。';
+
+  @override
+  String get dsdGainCompensationDesc =>
+      '仅校准 USB DoP/Native 的 DAC 硬件输出电平，与回放增益叠加；DSD 转 PCM 不应用。';
+
+  @override
+  String get dsdGainCompensationUnavailable => '当前输出不应用 DSD 硬件电平补偿。';
+
+  @override
+  String get dsdMode => 'DSD 模式';
+
+  @override
+  String get dsdNativeDesc => '设备声明 RAW_DATA 或 quirk 指定字节排列时直发 DSD，否则自动回退 DoP';
+
+  @override
+  String get dsdOutputStrategy => 'DSD 输出策略';
+
+  @override
+  String get dsdToPcm => '由解码器转为 PCM，走系统输出（兼容性最好）';
+
+  @override
+  String get dsdToPcmDesc => '以 PCM 帧封装 DSD，设备支持时使用';
+
+  @override
+  String get dsdToPcmRates => 'DSD 转 PCM 采样率';
+
+  @override
+  String get enableExclusive => '启用独占';
+
+  @override
+  String get encoding => '编码';
+
+  @override
+  String get exclusive => '独占';
+
+  @override
+  String get exclusivePlayback => '独占播放';
+
+  @override
+  String get exportToFile => '导出为文件';
+
+  @override
+  String exportedTo(String path) {
+    return '已导出到 $path';
+  }
+
+  @override
+  String get fileLabel => '文件';
+
+  @override
+  String get foregroundBuffer => '前台缓冲区';
+
+  @override
+  String get formatLabel => 'FORMAT';
+
+  @override
+  String get generateDiagnosticsReport => '生成诊断报告';
+
+  @override
+  String get generateDiagnosticsReportDesc =>
+      '汇总设备描述符、解析结果与最近日志，一键复制或导出发给开发者排查 DAC 兼容问题。';
+
+  @override
+  String get generateReport => '生成报告';
+
+  @override
+  String get generating => '生成中';
+
+  @override
+  String get hardwareVolumeFrozen => '音量同步失败，控制已冻结';
+
+  @override
+  String get hardwareVolumeSyncPending => '同步中';
+
+  @override
+  String get hardwareVolumeUnverified => '未验证';
+
+  @override
+  String get importAction => '导入';
+
+  @override
+  String get importQuirkConfig => '导入 quirk 配置';
+
+  @override
+  String get importQuirkConfigDesc => '粘贴开发者提供的设备适配 JSON，导入后重新连接设备生效';
+
+  @override
+  String get importQuirkFailed => '导入失败';
+
+  @override
+  String get importQuirkSuccess => 'quirk 配置已导入，重新连接设备后生效';
+
+  @override
+  String get inputSampleRate => '输入采样率';
+
+  @override
+  String get keepBackgroundActive => '保持后台活动';
+
+  @override
+  String get keepBackgroundActiveDesc => '减少后台播放时 USB 输出被系统中断的概率。';
+
+  @override
+  String get mediaVolume => '当前媒体音量';
+
+  @override
+  String minimumMs(int ms) {
+    return '最低 $ms ms';
+  }
+
+  @override
+  String get minimumNone => '最低 --';
+
+  @override
+  String get nameLabel => '名称';
+
+  @override
+  String get needAndroid14 => '需要 Android 14+';
+
+  @override
+  String get noUsbAudioDevice => '未连接 USB 音频设备';
+
+  @override
+  String get notEnabled => '未启用';
+
+  @override
+  String get openSettings => '打开设置';
+
+  @override
+  String get outputFormat => '输出格式';
+
+  @override
+  String get outputLinkLabel => 'OUTPUT LINK';
+
+  @override
+  String get outputMode => '输出模式';
+
+  @override
+  String get outputNotMeasured => '未获取';
+
+  @override
+  String get outputPort => '输出端口';
+
+  @override
+  String get outputSampleRate => '输出采样率';
+
+  @override
+  String get pcmBitDepth => 'PCM 位深';
+
+  @override
+  String pcmFloatContainer(int bits) {
+    return '$bits 位浮点';
+  }
+
+  @override
+  String pcmIntegerContainer(int bits) {
+    return '$bits-bit';
+  }
+
+  @override
+  String get pcmSystemDefault => 'PCM / 系统默认';
+
+  @override
+  String get playbackOpenFailed => '播放打开失败';
+
+  @override
+  String get playerOutput => '播放器输出';
+
+  @override
+  String get refreshUsbStatus => '刷新 USB 状态';
+
+  @override
+  String get releaseUsbBandwidth => '播放后释放 USB 带宽';
+
+  @override
+  String get releaseUsbBandwidthDesc => '停止播放后允许系统回收 USB 音频资源。';
+
+  @override
+  String get replayGain => '回放增益';
+
+  @override
+  String get replayGainAlbum => '按专辑';
+
+  @override
+  String get replayGainAlbumDesc => '优先使用专辑 ReplayGain 标签，缺失时回退为音轨标签。';
+
+  @override
+  String get replayGainApplying => '同步中';
+
+  @override
+  String get replayGainFallback => '无标签回退增益';
+
+  @override
+  String get replayGainFallbackDesc => '没有可用标签时按此值衰减，DSD 同样适用。固定回退不能保证歌曲响度一致。';
+
+  @override
+  String replayGainFallbackStatus(String status) {
+    return '无标签回退 · $status';
+  }
+
+  @override
+  String get replayGainNoTag => '无标签';
+
+  @override
+  String get replayGainNotApplied => '未应用';
+
+  @override
+  String get replayGainOff => '关闭';
+
+  @override
+  String get replayGainOffDesc => '不应用 ReplayGain。';
+
+  @override
+  String get replayGainTrack => '按音轨';
+
+  @override
+  String get replayGainTrackDesc => '优先使用音轨 ReplayGain 标签，缺失时回退为专辑标签。';
+
+  @override
+  String get requestSampleRate => '请求采样率';
+
+  @override
+  String get requested => '已请求';
+
+  @override
+  String get requestedExclusive => '已请求 USB 独占输出';
+
+  @override
+  String get requesting => '请求中';
+
+  @override
+  String get sharedOutputInfo =>
+      '播放器输出是交给系统的 PCM，最终输出可能经过重采样和音效处理。容器位数不代表音源有效位深。';
+
+  @override
+  String get sharedOutputMode => '系统共享输出';
+
+  @override
+  String get signalOutput => '信号输出';
+
+  @override
+  String get sourceBitDepth => '源位深';
+
+  @override
+  String get sourceFile => '源文件';
+
+  @override
+  String get speaker => '扬声器';
+
+  @override
+  String get suggestDisableBatteryOpt => '建议关闭电池优化';
+
+  @override
+  String get suggestDisableBatteryOptDesc =>
+      '否则后台播放或切到大型 App 时，USB 独占链路可能被系统暂停。';
+
+  @override
+  String get supportSection => '支持';
+
+  @override
+  String get supportedSampleRate => '支持采样率';
+
+  @override
+  String get systemDefault => '系统默认';
+
+  @override
+  String get systemNoExclusive => '当前系统不支持 USB 独占请求';
+
+  @override
+  String get systemOutputFormat => '系统最终格式';
+
+  @override
+  String targetMs(int ms) {
+    return '目标 $ms ms';
+  }
+
+  @override
+  String get transportBuffer => '传输缓冲';
+
+  @override
+  String get transportIdle => '待机';
+
+  @override
+  String get transportLow => '偏低';
+
+  @override
+  String get transportPaused => '暂停';
+
+  @override
+  String get transportStable => '稳定';
+
+  @override
+  String get transportStatus => '传输状态';
+
+  @override
+  String get transportUnderrun => '欠载';
+
+  @override
+  String get unavailable => '不可用';
+
+  @override
+  String get unrecognizedUsbDevice => '未识别 USB 设备';
+
+  @override
+  String get usbAuto => '自动';
+
+  @override
+  String get usbDacDetected => '检测到 USB DAC';
+
+  @override
+  String get usbDacDisconnected => 'USB DAC 已断开，已恢复 Android 系统输出';
+
+  @override
+  String get usbDiagnosticsReport => 'USB 诊断报告';
+
+  @override
+  String get usbDiagnosticsReportPrivacy =>
+      '包含设备名称与 USB 描述符，不包含任何音乐文件内容；序列号已脱敏。';
+
+  @override
+  String get usbExclusive => 'USB 独占';
+
+  @override
+  String get usbExclusiveLabel => 'USB EXCLUSIVE';
+
+  @override
+  String get usbExclusiveMode => 'USB 独占模式';
+
+  @override
+  String get usbExclusiveModeDesc => '连接 DAC 后启用独占提示与高优先级输出策略。';
+
+  @override
+  String get usbIdLabel => 'USB ID';
+
+  @override
+  String usbOutputLabel(String name) {
+    return '$name · USB 输出';
+  }
+
+  @override
+  String get usbOutputSettings => 'USB 输出设置';
+
+  @override
+  String get usbSlotBitDepth => 'USB 槽位';
+
+  @override
+  String get usbStreamingBuffering => '缓冲中…';
+
+  @override
+  String get usbStreamingBufferingDetail => '网络下载没跟上，正在等待数据';
+
+  @override
+  String get viewLink => '查看链路';
+
+  @override
+  String get volumeControl => '音量控制';
+
+  @override
+  String get volumeControlDac => 'DAC 硬件音量';
+
+  @override
+  String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
+
+  @override
+  String get volumeControlDigital => '数字音量';
+
+  @override
+  String get volumeControlRaw => '原始数字电平';
+
+  @override
+  String get volumeControlRawConfirm => '原始电平满幅直通';
+
+  @override
+  String get volumeSection => '音量';
+
+  @override
+  String get volumeSmoothHandoff => '音量平滑交接';
+
+  @override
+  String get volumeSmoothHandoffDesc =>
+      'PCM 切入 DAC 硬件音量时渐变数字衰减；首次接管优先保留较小的 DAC 音量。常规音量上升保护始终启用。';
 }

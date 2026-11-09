@@ -134,6 +134,13 @@ class _SettingsListState extends State<SettingsList> {
           paddingIfNeed(isLandscape, cleanCacheListTile(context, l10n)),
         ),
 
+        // The USB exclusive output is an Android feature: it claims a USB audio
+        // device, which the other platforms do not have.
+        if (Platform.isAndroid)
+          sliverBox(
+            paddingIfNeed(isLandscape, audioOutputListTile(context, l10n)),
+          ),
+
         sliverBox(
           paddingIfNeed(isLandscape, downloadsListTile(context, l10n)),
         ),
@@ -317,6 +324,16 @@ class _SettingsListState extends State<SettingsList> {
           return Text("${value.toStringAsFixed(1)}MB  ");
         },
       ),
+    );
+  }
+
+  Widget audioOutputListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: Icon(Icons.usb_rounded, size: iconSize),
+      title: Text(l10n.audioOutput),
+      subtitle: Text(l10n.audioOutputSubtitle),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () => layersManager.pushDetail('settings', 'audio_output'),
     );
   }
 
