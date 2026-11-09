@@ -2354,6 +2354,12 @@ abstract class AppLocalizations {
   /// **'Output sample rate'**
   String get outputSampleRate;
 
+  /// No description provided for @outputSampleRateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Adaptive keeps the source rate for a bit-perfect path; a fixed rate is requested from the output engine instead.'**
+  String get outputSampleRateDesc;
+
   /// No description provided for @pcmBitDepth.
   ///
   /// In en, this message translates to:
@@ -2636,6 +2642,18 @@ abstract class AppLocalizations {
   /// **'Underrun'**
   String get transportUnderrun;
 
+  /// No description provided for @transportIso.
+  ///
+  /// In en, this message translates to:
+  /// **'ISO packets'**
+  String get transportIso;
+
+  /// No description provided for @transportUnderruns.
+  ///
+  /// In en, this message translates to:
+  /// **'Underruns'**
+  String get transportUnderruns;
+
   /// No description provided for @unavailable.
   ///
   /// In en, this message translates to:
@@ -2693,7 +2711,7 @@ abstract class AppLocalizations {
   /// No description provided for @usbExclusiveMode.
   ///
   /// In en, this message translates to:
-  /// **'USB exclusive mode'**
+  /// **'Exclusive output policy'**
   String get usbExclusiveMode;
 
   /// No description provided for @usbExclusiveModeDesc.
@@ -2701,6 +2719,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable exclusive hints and a high-priority output policy once a DAC is connected.'**
   String get usbExclusiveModeDesc;
+
+  /// No description provided for @exclusiveRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get exclusiveRunning;
+
+  /// No description provided for @exclusivePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get exclusivePaused;
+
+  /// No description provided for @usbExclusiveTakeover.
+  ///
+  /// In en, this message translates to:
+  /// **'USB exclusive mode'**
+  String get usbExclusiveTakeover;
+
+  /// No description provided for @usbExclusiveTakeoverDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand the USB DAC to the output engine when on; unplugging the device or turning this off falls back to the system output.'**
+  String get usbExclusiveTakeoverDesc;
 
   /// No description provided for @usbIdLabel.
   ///

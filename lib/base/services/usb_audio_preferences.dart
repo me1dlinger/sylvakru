@@ -69,6 +69,15 @@ class UsbAudioPreferences {
   final foregroundBufferMsNotifier = ValueNotifier(200);
   final backgroundBufferMsNotifier = ValueNotifier(1000);
   final volumeSmoothHandoffNotifier = ValueNotifier(true);
+
+  /// Master switch for the exclusive takeover: when on, a playable DAC is
+  /// handed to the output engine; when off the shared mpv path owns the sound.
+  final usbExclusiveEnabledNotifier = ValueNotifier(false);
+
+  /// Requested exclusive output rate in Hz, or 0 for adaptive: the source rate
+  /// is packed straight to the DAC when it is supported, with no resampling.
+  final outputSampleRateNotifier = ValueNotifier(0);
+
   final Map<String, double> _exclusiveDeviceVolumes = {};
 
   void load(Map<String, dynamic> json) {
@@ -123,6 +132,10 @@ class UsbAudioPreferences {
     );
     volumeSmoothHandoffNotifier.value =
         json['usbVolumeSmoothHandoff'] as bool? ?? true;
+    usbExclusiveEnabledNotifier.value =
+        json['usbExclusiveEnabled'] as bool? ?? false;
+    outputSampleRateNotifier.value =
+        _validRate(json['usbOutputSampleRate'] as int?) ?? 0;
   }
 
   void loadDeviceVolumes(Object? deviceVolumes) {
@@ -157,6 +170,8 @@ class UsbAudioPreferences {
       'usbForegroundBufferMs': foregroundBufferMsNotifier.value,
       'usbBackgroundBufferMs': backgroundBufferMsNotifier.value,
       'usbVolumeSmoothHandoff': volumeSmoothHandoffNotifier.value,
+      'usbExclusiveEnabled': usbExclusiveEnabledNotifier.value,
+      'usbOutputSampleRate': outputSampleRateNotifier.value,
       'usbExclusiveDeviceVolumes': Map<String, double>.unmodifiable(
         _exclusiveDeviceVolumes,
       ),

@@ -1162,6 +1162,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get outputSampleRate => '输出采样率';
 
   @override
+  String get outputSampleRateDesc => '自适应保持源采样率以实现直通；固定采样率则向输出引擎请求该速率。';
+
+  @override
   String get pcmBitDepth => 'PCM 位深';
 
   @override
@@ -1313,6 +1316,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transportUnderrun => '欠载';
 
   @override
+  String get transportIso => 'ISO 包';
+
+  @override
+  String get transportUnderruns => '欠载';
+
+  @override
   String get unavailable => '不可用';
 
   @override
@@ -1341,10 +1350,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usbExclusiveLabel => 'USB EXCLUSIVE';
 
   @override
-  String get usbExclusiveMode => 'USB 独占模式';
+  String get usbExclusiveMode => '独占输出策略';
 
   @override
   String get usbExclusiveModeDesc => '连接 DAC 后启用独占提示与高优先级输出策略。';
+
+  @override
+  String get exclusiveRunning => '运行中';
+
+  @override
+  String get exclusivePaused => '已暂停';
+
+  @override
+  String get usbExclusiveTakeover => 'USB 独占模式';
+
+  @override
+  String get usbExclusiveTakeoverDesc => '开启后接管 USB DAC；拔掉设备或关闭开关自动回落到系统输出。';
 
   @override
   String get usbIdLabel => 'USB ID';

@@ -18,6 +18,7 @@ import 'package:sylvakru/base/services/stream_relay.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
+import 'package:sylvakru/base/services/usb_exclusive_controller.dart';
 import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -187,6 +188,17 @@ class MyAudioHandler extends BaseAudioHandler {
 
   Timer? _positionTimer;
 
+  // Progress is fed from whichever output owns the sound: the shared player
+  // when it is playing, the exclusive controller otherwise. A single stream
+  // keeps the seekbar and media session independent of which path is live.
+  final _positionController = StreamController<Duration>.broadcast();
+  final _durationController = StreamController<Duration>.broadcast();
+
+  // Set while the shared player is stopped on purpose as the DAC is handed to
+  // the exclusive engine, so the stop's completed event is not read as the
+  // track finishing and advancing the queue.
+  bool _suppressPlayerCompleted = false;
+
   // Last lyric line pushed to the system media session, so the notification is
   // only refreshed when the displayed line actually changes.
   String? _publishedLyric;
@@ -237,6 +249,9 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.completed.listen((completed) async {
+      if (_suppressPlayerCompleted) {
+        return;
+      }
       if (completed) {
         final position = _player.state.position;
         final duration = _player.state.duration;
@@ -273,6 +288,33 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen(_updateCurrentLyricIndex);
+
+    // While the exclusive engine owns the output the shared player is stopped,
+    // so its streams would go silent; the controller feeds progress instead.
+    _player.stream.position.listen((position) {
+      if (!usbExclusiveController.active) {
+        _positionController.add(position);
+      }
+    });
+    _player.stream.duration.listen((duration) {
+      if (!usbExclusiveController.active) {
+        _durationController.add(duration);
+      }
+    });
+
+    usbExclusiveController.attach(
+      handOffToPlayer: _openMpvAtPosition,
+      onSongFinished: _handleExclusiveSongFinished,
+      onPosition: (position) {
+        _positionController.add(position);
+        updatePlaybackState(postion: position);
+        _updateCurrentLyricIndex(position);
+      },
+      onPlayingChanged: (playing) {
+        updateIsPlaying(playing);
+        updatePlaybackState();
+      },
+    );
 
     // iOS: hold a background task for the whole buffering phase (including
     // mid-song stalls on weak network) so the process is not suspended before
@@ -372,8 +414,8 @@ class MyAudioHandler extends BaseAudioHandler {
         systemActions: {MediaAction.seek},
         playing: isPlayingNotifier.value,
         processingState: stop ? .idle : .ready,
-        speed: _player.state.rate,
-        updatePosition: postion ?? _player.state.position,
+        speed: usbExclusiveController.active ? 1.0 : _player.state.rate,
+        updatePosition: postion ?? getPosition(),
       ),
     );
   }
@@ -683,6 +725,9 @@ class MyAudioHandler extends BaseAudioHandler {
   void justClear() {
     _endLoadGrace();
     _endStallGrace();
+    if (usbExclusiveController.active) {
+      unawaited(usbExclusiveController.stop());
+    }
     _player.stop();
     updateIsPlaying(false);
     updatePlaybackState(stop: true);
@@ -989,72 +1034,45 @@ class MyAudioHandler extends BaseAudioHandler {
       return;
     }
 
-    try {
-      if (currentSong.cacheExist) {
-        await _player.open(
-          Media(currentSong.cachePath!, start: start),
-          play: isPlayingNotifier.value,
+    // With the takeover switch on, a playable track is handed to the output
+    // engine first; only when that is refused does the shared player open it.
+    var openedExclusive = false;
+    if (usbExclusiveController.enabled) {
+      try {
+        openedExclusive = await usbExclusiveController.start(
+          currentSong,
+          start: start,
+          paused: !isPlayingNotifier.value,
         );
-      } else {
-        String? resource;
-        Map<String, String>? headers;
-
-        switch (sourceType) {
-          case .webdav:
-            final tmpPath = await covertToRedirectPathIfNeed(currentSong.path!);
-            if (tmpPath == null) {
-              headers = webdavClient?.headers;
-            } else {
-              resource = tmpPath;
-            }
-          case .navidrome:
-          case .emby:
-          case .feiniu:
-            await streamClient?.ping();
-            resource = streamClient?.getStreamUrl(currentSong.id);
-            headers = streamClient?.headers;
-          default:
-            break;
-        }
-        resource ??= currentSong.path!;
-
-        // libmpv's bundled ffmpeg does TLS with macOS Secure Transport, which
-        // cannot negotiate TLS 1.3 - servers requiring it kill the handshake
-        // regardless of any proxy setting. Dart's HttpClient handles TLS 1.3
-        // and the system proxy, so remote streams are re-served to mpv over
-        // plain localhost HTTP (see StreamRelay).
-        final uri = Uri.tryParse(resource);
-        final isRemote =
-            uri != null &&
-            (uri.scheme == 'https' || uri.scheme == 'http') &&
-            uri.host != '127.0.0.1' &&
-            uri.host != 'localhost' &&
-            uri.host != '::1';
-
-        if (isRemote) {
-          final relayUrl = await streamRelay.register(resource, headers);
-          resource = relayUrl;
-          headers = null;
-        }
-
-        await _player.open(
-          Media(resource, httpHeaders: headers, start: start),
-          play: isPlayingNotifier.value,
-        );
+      } catch (error) {
+        logger.output("[${currentSong.title}] usb exclusive start failed: $error");
+        openedExclusive = false;
       }
+    }
 
-      if (isPlayingNotifier.value) {
-        _playLastSyncTime = DateTime.now();
+    try {
+      if (openedExclusive) {
+        // The engine owns the DAC now; stop the shared player so both paths
+        // cannot drive the output at once.
+        await _stopPlayerForExclusive();
+        if (isPlayingNotifier.value) {
+          _playLastSyncTime = DateTime.now();
+        }
+      } else {
+        if (usbExclusiveController.active) {
+          await usbExclusiveController.stop();
+        }
+        await _openMpvForCurrentSong(currentSong, start: start);
       }
     } catch (error) {
       stop();
       logger.output("[${currentSong.title}] $error");
     }
 
-    updatePlaybackState(postion: Duration.zero);
+    updatePlaybackState(postion: getPosition());
 
     if (start == null) {
-      _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
+      _positionState.writeAsString(getPosition().inMilliseconds.toString());
     }
 
     loadingSong = false;
@@ -1063,6 +1081,130 @@ class MyAudioHandler extends BaseAudioHandler {
     // position tick to notice it.
     _updateCurrentLyricIndex(getPosition());
     updateServiceMediaItem(currentSong, lyric: _currentLyricText());
+  }
+
+  /// Opens [currentSong] with the shared player at [start], keeping the current
+  /// play/pause state. Extracted from [load] so the exclusive handoff can reuse
+  /// the exact same open path - artwork/lyrics publishing stays in [load].
+  Future<void> _openMpvForCurrentSong(
+    MyAudioMetadata currentSong, {
+    Duration? start,
+  }) async {
+    if (currentSong.cacheExist) {
+      await _player.open(
+        Media(currentSong.cachePath!, start: start),
+        play: isPlayingNotifier.value,
+      );
+    } else {
+      String? resource;
+      Map<String, String>? headers;
+
+      switch (sourceType) {
+        case .webdav:
+          final tmpPath = await covertToRedirectPathIfNeed(currentSong.path!);
+          if (tmpPath == null) {
+            headers = webdavClient?.headers;
+          } else {
+            resource = tmpPath;
+          }
+        case .navidrome:
+        case .emby:
+        case .feiniu:
+          await streamClient?.ping();
+          resource = streamClient?.getStreamUrl(currentSong.id);
+          headers = streamClient?.headers;
+        default:
+          break;
+      }
+      resource ??= currentSong.path!;
+
+      // libmpv's bundled ffmpeg does TLS with macOS Secure Transport, which
+      // cannot negotiate TLS 1.3 - servers requiring it kill the handshake
+      // regardless of any proxy setting. Dart's HttpClient handles TLS 1.3 and
+      // the system proxy, so remote streams are re-served to mpv over plain
+      // localhost HTTP (see StreamRelay).
+      final uri = Uri.tryParse(resource);
+      final isRemote =
+          uri != null &&
+          (uri.scheme == 'https' || uri.scheme == 'http') &&
+          uri.host != '127.0.0.1' &&
+          uri.host != 'localhost' &&
+          uri.host != '::1';
+
+      if (isRemote) {
+        final relayUrl = await streamRelay.register(resource, headers);
+        resource = relayUrl;
+        headers = null;
+      }
+
+      await _player.open(
+        Media(resource, httpHeaders: headers, start: start),
+        play: isPlayingNotifier.value,
+      );
+    }
+
+    if (isPlayingNotifier.value) {
+      _playLastSyncTime = DateTime.now();
+    }
+  }
+
+  /// Stops the shared player without letting its completed event advance the
+  /// queue: used when the exclusive engine takes the output over mid-load.
+  Future<void> _stopPlayerForExclusive() async {
+    _suppressPlayerCompleted = true;
+    try {
+      await _player.stop();
+    } finally {
+      scheduleMicrotask(() {
+        _suppressPlayerCompleted = false;
+      });
+    }
+  }
+
+  /// Hand-off entry used by the exclusive controller: reopens the current song
+  /// with the shared player at [position] and restores the play/pause state.
+  Future<void> _openMpvAtPosition(Duration position) async {
+    final currentSong = currentSongNotifier.value;
+    if (currentSong == null) {
+      return;
+    }
+    try {
+      await _openMpvForCurrentSong(currentSong, start: position);
+      // Streaming media drops a seek issued before it is ready, so wait for a
+      // duration (bounded) before locating, rather than leaving it at zero.
+      if (position > Duration.zero && _player.state.duration <= Duration.zero) {
+        await _player.stream.duration
+            .firstWhere((duration) => duration > Duration.zero)
+            .timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => Duration.zero,
+            );
+        if (_player.state.duration > Duration.zero) {
+          await _player.seek(position);
+        }
+      }
+      _positionController.add(position);
+      updatePlaybackState(postion: position);
+    } catch (error) {
+      logger.output("usb exclusive handoff failed:$error");
+    }
+  }
+
+  /// Natural end of an exclusive track: advance the queue the same way the
+  /// shared player's completed event does, honouring repeat and sleep-timer.
+  Future<void> _handleExclusiveSongFinished() async {
+    final needPauseTmp = needPause;
+    while (Loader.busy) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+    if (playModeNotifier.value == 2) {
+      await load();
+    } else {
+      await skipToNext();
+    }
+    if (needPauseTmp) {
+      await pause();
+    }
   }
 
   /// Current lyric line, or null when the song has no lyrics, the position is
@@ -1311,7 +1453,14 @@ class MyAudioHandler extends BaseAudioHandler {
   /// takeover); otherwise the value is simply remembered for the next time it
   /// takes over.
   void setUsbExclusiveVolume(double volume) {
-    usbExclusiveVolumeNotifier.value = volume.clamp(0.0, 1.0).toDouble();
+    final next = volume.clamp(0.0, 1.0).toDouble();
+    if (usbExclusiveController.active) {
+      unawaited(
+        usbExclusiveController.applyVolume(next).then((_) => savePlayState()),
+      );
+      return;
+    }
+    usbExclusiveVolumeNotifier.value = next;
     savePlayState();
   }
 
@@ -1393,7 +1542,11 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     if (playQueue.isEmpty) return;
-    _player.play();
+    if (usbExclusiveController.active) {
+      await usbExclusiveController.resume();
+    } else {
+      _player.play();
+    }
 
     await updateIsPlaying(true);
     updatePlaybackState();
@@ -1405,9 +1558,13 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> pause() async {
-    _player.pause();
+    if (usbExclusiveController.active) {
+      await usbExclusiveController.pause();
+    } else {
+      _player.pause();
+    }
     await updateIsPlaying(false);
-    updatePlaybackState();
+    updatePlaybackState(postion: getPosition());
     _positionTimer?.cancel();
     _positionTimer = null;
     _positionState.writeAsString(getPosition().inMilliseconds.toString());
@@ -1417,6 +1574,9 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> stop() async {
     await _endLoadGrace();
     await _endStallGrace();
+    if (usbExclusiveController.active) {
+      await usbExclusiveController.stop();
+    }
     _player.stop();
     await updateIsPlaying(false);
     updatePlaybackState(stop: true);
@@ -1428,6 +1588,14 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> seek(Duration position) async {
     updatePlaybackState(postion: position);
+    if (usbExclusiveController.active) {
+      await usbExclusiveController.seek(position);
+      // ensure position is updated
+      await Future.delayed(Duration(milliseconds: 50));
+      updateLyricsNotifier.value++;
+      _positionState.writeAsString(position.inMilliseconds.toString());
+      return;
+    }
     await _player.seek(position);
     // ensure position is updated
     await Future.delayed(Duration(milliseconds: 50));
@@ -1462,22 +1630,32 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Stream<Duration> getPositionStream() {
-    return _player.stream.position;
+    return _positionController.stream;
   }
 
   Stream<Duration> getDurationStream() {
-    return _player.stream.duration;
+    return _durationController.stream;
   }
 
   Duration getPosition() {
-    return _player.state.position;
+    return usbExclusiveController.active
+        ? usbExclusiveController.position
+        : _player.state.position;
   }
 
   Duration getCurrentDuration() {
-    return _player.state.duration;
+    return usbExclusiveController.active
+        ? usbExclusiveController.duration ?? getDuration(currentSongNotifier.value)
+        : _player.state.duration;
   }
 
   void setVolume(double volume) {
+    if (usbExclusiveController.active) {
+      unawaited(
+        usbExclusiveController.applyVolume(volume).then((_) => savePlayState()),
+      );
+      return;
+    }
     double adjustedVolume = (math.log(volume * 9 + 1) / math.log(10)) * 100;
     _player.setVolume(adjustedVolume);
   }

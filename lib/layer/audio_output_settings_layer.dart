@@ -14,6 +14,7 @@ import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
+import 'package:sylvakru/base/services/usb_exclusive_controller.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/audio_output_panel.dart';
@@ -157,6 +158,21 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _settingsCard(
+              children: [
+                _switchTile(
+                  title: _l10n.usbExclusiveTakeover,
+                  subtitle: _l10n.usbExclusiveTakeoverDesc,
+                  notifier: prefs.usbExclusiveEnabledNotifier,
+                  onToggle: () => unawaited(
+                    usbExclusiveController.setEnabled(
+                      prefs.usbExclusiveEnabledNotifier.value,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             _deviceStatusCard(status),
             const SizedBox(height: 12),
             _transportStatusCard(status),
@@ -185,6 +201,13 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                   values: UsbBitDepthMode.values,
                   label: _bitDepthModeLabel,
                 ),
+                _choiceTile<int>(
+                  title: _l10n.outputSampleRate,
+                  notifier: prefs.outputSampleRateNotifier,
+                  values: const [0, ...UsbAudioPreferences.sampleRates],
+                  label: _outputSampleRateLabel,
+                ),
+                _hintTile(_l10n.outputSampleRateDesc),
               ],
             ),
             const SizedBox(height: 18),
@@ -378,7 +401,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
             : null;
         final statusLabel = supported ? _l10n.connected : _l10n.notConnected;
         final linkLabel = exclusive.active
-            ? _l10n.exclusivePlayback
+            ? (exclusive.playing ? _l10n.exclusiveRunning : _l10n.exclusivePaused)
             : supported
             ? _l10n.notEnabled
             : _l10n.awaitingConnection;
@@ -681,6 +704,29 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${_l10n.transportIso} ${telemetry.isoPacketCount}',
+                                style: TextStyle(
+                                  color: foreground.withAlpha(135),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '${_l10n.transportUnderruns} ${telemetry.underrunCount}',
+                              style: TextStyle(
+                                color: foreground.withAlpha(135),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -823,6 +869,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
     required String title,
     required String subtitle,
     required ValueNotifier<bool> notifier,
+    void Function()? onToggle,
   }) {
     return ListTile(
       title: Text(title),
@@ -831,7 +878,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
         width: 52,
         child: MySwitch(
           valueNotifier: notifier,
-          onToggleCallBack: setting.save,
+          onToggleCallBack: onToggle ?? setting.save,
         ),
       ),
     );
@@ -1744,6 +1791,11 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
       UsbBitDepthMode.pcm24 => '24 bits',
       UsbBitDepthMode.pcm32 => '32 bits',
     };
+  }
+
+  String _outputSampleRateLabel(int value) {
+    if (value == 0) return _l10n.usbAuto;
+    return formatSampleRate(value, _l10n);
   }
 }
 

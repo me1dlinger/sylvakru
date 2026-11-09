@@ -1181,6 +1181,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outputSampleRate => 'Output sample rate';
 
   @override
+  String get outputSampleRateDesc =>
+      'Adaptive keeps the source rate for a bit-perfect path; a fixed rate is requested from the output engine instead.';
+
+  @override
   String get pcmBitDepth => 'PCM bit depth';
 
   @override
@@ -1337,6 +1341,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transportUnderrun => 'Underrun';
 
   @override
+  String get transportIso => 'ISO packets';
+
+  @override
+  String get transportUnderruns => 'Underruns';
+
+  @override
   String get unavailable => 'Unavailable';
 
   @override
@@ -1366,11 +1376,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usbExclusiveLabel => 'USB EXCLUSIVE';
 
   @override
-  String get usbExclusiveMode => 'USB exclusive mode';
+  String get usbExclusiveMode => 'Exclusive output policy';
 
   @override
   String get usbExclusiveModeDesc =>
       'Enable exclusive hints and a high-priority output policy once a DAC is connected.';
+
+  @override
+  String get exclusiveRunning => 'Running';
+
+  @override
+  String get exclusivePaused => 'Paused';
+
+  @override
+  String get usbExclusiveTakeover => 'USB exclusive mode';
+
+  @override
+  String get usbExclusiveTakeoverDesc =>
+      'Hand the USB DAC to the output engine when on; unplugging the device or turning this off falls back to the system output.';
 
   @override
   String get usbIdLabel => 'USB ID';
